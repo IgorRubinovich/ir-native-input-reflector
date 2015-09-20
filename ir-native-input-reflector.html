@@ -1,0 +1,122 @@
+<!--
+@license
+Copyright (c) 2015 Igor Rubinovich <igor.rubinovich@gmail.com>. All rights reserved.
+This code may only be used under the MIT license found at http://opensource.org/licenses/MIT
+-->
+<!--
+# ir-native-input-reflector
+
+**Polymer 1.0 behavior to enable custom web component submission as a field in a native html form.**
+
+You might have been puzzled about how exactly a non-native component may be submitted as part of a static form. 
+You might also be aware that it's not possibble to append child elements to input elements. 
+Thus it's not possible to enrich an input with shadow dom.
+
+ir-native-input-reflector is a presentationless element solves this by adding a hidden native input to its lite dom, reflecting the 
+targetField property of its target to the hidden field. The name of the hidden input field is determined by the host's .name property. 
+The hidden input is thus submitted as part of the native form under the given name, and provides the developer with
+an element that feels totally like any input element.
+
+## How it works
+- In the `attached` lifecycle phase a hidden input element is created in the ir-native-input-reflector's Light DOM.
+- A two-way bound `.value` property is added to the host. When the host updates `.value`.
+it is reflected to the hidden native input element's `value` attribute.
+
+## Usage
+
+- Simple: Assign to `.value` when host's "output" value changes and don't worry about the rest.
+- Advanced: Observe `.value` to update host's internal state.
+
+## To-do
+- Demo
+
+## License
+[MIT](http://opensource.org/licenses/MIT) 
+
+-->
+
+<dom-module is="ir-native-input-reflector">
+	<template>
+		<content></content>
+	</template>
+</dom-module>
+
+<script>
+if(!window.ir) window.ir = {};
+
+Polymer({
+	is : "ir-native-input-reflector",
+	attached : function() {
+		var el, that = this, map = null, m, mk, mv;
+
+		el = document.querySelector(this.target);
+		if(!el)
+		{
+			
+			el = document.querySelectorAll('[name="' + this.name + '"]');
+			if(el)
+				el = el[0];
+		}
+		
+		this.targetElement = el;
+
+		this.nativeInputElement = document.createElement('input');
+		this.nativeInputElement.setAttribute('type', 'hidden');
+		this.nativeInputElement.setAttribute('name', this.name || el.getAttribute("name"));
+		
+		Polymer.dom(this).appendChild(this.nativeInputElement);
+
+		that.nativeInputElement.value = that.get(that.valueAttr, that.targetElement);
+		
+		if(this.map)
+		{
+			map = [];
+			
+			for(m = 0; m < that.map.length; m++)
+			{
+				mk = Object.keys(that.map[m])[0]; // it's an array of single key-value pairs
+				mv = this.map[m][mk];
+				
+				map.push({ re : new RegExp(mk), val : mv });
+			}
+		}
+
+		el.addEventListener(this.onEvent, function() {
+			var m, strVal,
+				v = that.get(that.valueAttr, that.targetElement);
+			
+			that.nativeInputElement.value = v;
+
+			if(!map)
+				return
+			
+			strVal = v.toString();
+			for(m = 0; m < map.length; m++)
+				if(strVal.match(map[m].re))
+					return that.nativeInputElement.value = map[m].val;
+		});
+	},
+	
+	/** value of the reflected element */
+	properties : {
+		value : { 
+			type : String,
+			observer : "_reflectToNativeClone",
+			notify : true
+		},
+/* 
+Specifies input name that will be submitted as part of the form. if not provided will attempt to use target element's name,
+if that's not available will be useless (or should it throw an exception?)
+*/
+		name : { type : String },
+		/** id of target element to reflect. if not provided will try to match by name */
+		target : { type : String },
+		/** value field to  reflect on target element */
+		valueAttr : { type : String },
+		/** event on target element that triggers updates */
+		onEvent : { type : String },
+		/** json map of regex=>value mappings, e.g.: '[{ "false" : "0"}, {"." : "true"}]'. First match wins. Keeps the value intact when empty or no match.*/
+		map : { type : Object }
+	}	
+});
+</script>
