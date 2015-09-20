@@ -21,6 +21,10 @@ it is reflected to the hidden native input element's `value` attribute.
 - Simple: Assign to `.value` when host's "output" value changes and don't worry about the rest.
 - Advanced: Observe `.value` to update host's internal state.
 
+## Related
+This control complements [ir-reflect-to-native-behavior](https://github.com/IgorRubinovich/ir-reflect-to-native-behavior), which may
+be used by web components developers to enable submission of components as part of a native html form. Please see there for more details.
+
 ## To-do
 - Demo
 
