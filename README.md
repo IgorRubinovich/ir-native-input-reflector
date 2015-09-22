@@ -18,12 +18,23 @@ it is reflected to the hidden native input element's `value` attribute.
 
 ## Usage
 
-- Simple: Assign to `.value` when host's "output" value changes and don't worry about the rest.
-- Advanced: Observe `.value` to update host's internal state.
+    <ir-native-input-reflector name="isPublished" value-attr="checked" on-event="iron-change" map='[{ "false" : "0" }, {"." : "true"}]'></ir-native-input-reflector>
 
+	| property 	| type 		| description |
+	| -------- 	| --------- | ----------- |
+	| name		| String 	| Specifies input name that will be submitted as part of the form. if not provided will attempt to use target element's name, if that's not available will be useless |
+	| target	| String	| id of target element to reflect. if not provided will try to match by name |
+	| valueAttr | String	| value attr to reflect from target element (e. g. 'checked', 'value'). Default is `value`. |
+	| onEvent	| String	| event on source element that triggers updates |
+	| map 		| Object 	| json map of regex=>value mappings, e.g.: '[{ "false" : "0"}, {"." : "true"}]'. First match wins. Keeps the value intact when empty or no match. |
+
+	
 ## Related
 This control complements [ir-reflect-to-native-behavior](https://github.com/IgorRubinovich/ir-reflect-to-native-behavior), which may
-be used by web components developers to enable submission of components as part of a native html form. Please see there for more details.
+be used by web components developers to enable submission of components as part of a native html form. ir-reflect-to-native-behavior is
+great for bringing native form compliance to new components that developer has control over. ir-native-input-reflector on the other hand
+works with 3rd party components the developer does not control.
+Please see [ir-reflect-to-native-behavior](https://github.com/IgorRubinovich/ir-reflect-to-native-behavior) for more details.
 
 ## To-do
 - Demo

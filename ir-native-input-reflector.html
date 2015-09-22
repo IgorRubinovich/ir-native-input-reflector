@@ -13,7 +13,7 @@ You might also be aware that it's not possibble to append child elements to inpu
 Thus it's not possible to enrich an input with shadow dom.
 
 ir-native-input-reflector is a presentationless element solves this by adding a hidden native input to its lite dom, reflecting the 
-targetField property of its target to the hidden field. The name of the hidden input field is determined by the host's .name property. 
+valueAttr property of its source to the hidden field. The name of the hidden input field is determined by the host's .name property. 
 The hidden input is thus submitted as part of the native form under the given name, and provides the developer with
 an element that feels totally like any input element.
 
@@ -49,7 +49,7 @@ Polymer({
 	attached : function() {
 		var el, that = this, map = null, m, mk, mv;
 
-		el = document.querySelector(this.target);
+		el = document.querySelector(this.source);
 		if(!el)
 		{
 			
@@ -58,7 +58,7 @@ Polymer({
 				el = el[0];
 		}
 		
-		this.targetElement = el;
+		this.sourceElement = el;
 
 		this.nativeInputElement = document.createElement('input');
 		this.nativeInputElement.setAttribute('type', 'hidden');
@@ -66,7 +66,7 @@ Polymer({
 		
 		Polymer.dom(this).appendChild(this.nativeInputElement);
 
-		that.nativeInputElement.value = that.get(that.valueAttr, that.targetElement);
+		that.nativeInputElement.value = that.get(that.valueAttr, that.sourceElement);
 		
 		if(this.map)
 		{
@@ -83,7 +83,7 @@ Polymer({
 
 		el.addEventListener(this.onEvent, function() {
 			var m, strVal,
-				v = that.get(that.valueAttr, that.targetElement);
+				v = that.get(that.valueAttr, that.sourceElement);
 			
 			that.nativeInputElement.value = v;
 
@@ -105,15 +105,15 @@ Polymer({
 			notify : true
 		},
 /* 
-Specifies input name that will be submitted as part of the form. if not provided will attempt to use target element's name,
+Specifies input name that will be submitted as part of the form. if not provided will attempt to use source element's name,
 if that's not available will be useless (or should it throw an exception?)
 */
 		name : { type : String },
-		/** id of target element to reflect. if not provided will try to match by name */
-		target : { type : String },
-		/** value field to  reflect on target element */
-		valueAttr : { type : String },
-		/** event on target element that triggers updates */
+		/** id of source element to reflect. if not provided will try to match by name */
+		source : { type : String },
+		/** value field to reflect on source element */
+		valueAttr : { type : String, default : "value" },
+		/** event on source element that triggers updates */
 		onEvent : { type : String },
 		/** json map of regex=>value mappings, e.g.: '[{ "false" : "0"}, {"." : "true"}]'. First match wins. Keeps the value intact when empty or no match.*/
 		map : { type : Object }
