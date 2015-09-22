@@ -23,7 +23,7 @@ an element that feels totally like any input element.
 | -------- 	| --------- | ----------- |
 | source	| String	| id of target element to reflect. if not provided will try to match by `name`. |
 | name		| String 	| Specifies input name that will be submitted as part of the form. if not provided will attempt to use target element's `name`, if that's not available will be useless. |
-| valueAttr | String	| value attr to reflect from target element (e. g. 'checked', 'value'). Default is `value`. |
+| valueAttr | String	| value attr to reflect from source element (e. g. 'checked', 'value'). Default is `value`. |
 | onEvent	| String	| event on source element that triggers updates. |
 | map 		| Object 	| json map of regex=>value mappings, e.g.: '[{ "false" : "0"}, {"." : "true"}]'. First match wins. Keeps the value intact when empty or no match. |
 
