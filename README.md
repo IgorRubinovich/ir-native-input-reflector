@@ -20,13 +20,13 @@ it is reflected to the hidden native input element's `value` attribute.
 
     <ir-native-input-reflector name="isPublished" value-attr="checked" on-event="iron-change" map='[{ "false" : "0" }, {"." : "true"}]'></ir-native-input-reflector>
 
-	| property 	| type 		| description |
-	| -------- 	| --------- | ----------- |
-	| name		| String 	| Specifies input name that will be submitted as part of the form. if not provided will attempt to use target element's name, if that's not available will be useless |
-	| target	| String	| id of target element to reflect. if not provided will try to match by name |
-	| valueAttr | String	| value attr to reflect from target element (e. g. 'checked', 'value'). Default is `value`. |
-	| onEvent	| String	| event on source element that triggers updates |
-	| map 		| Object 	| json map of regex=>value mappings, e.g.: '[{ "false" : "0"}, {"." : "true"}]'. First match wins. Keeps the value intact when empty or no match. |
+| property 	| type 		| description |
+| -------- 	| --------- | ----------- |
+| name		| String 	| Specifies input name that will be submitted as part of the form. if not provided will attempt to use target element's name, if that's not available will be useless |
+| target	| String	| id of target element to reflect. if not provided will try to match by name |
+| valueAttr | String	| value attr to reflect from target element (e. g. 'checked', 'value'). Default is `value`. |
+| onEvent	| String	| event on source element that triggers updates |
+| map 		| Object 	| json map of regex=>value mappings, e.g.: '[{ "false" : "0"}, {"." : "true"}]'. First match wins. Keeps the value intact when empty or no match. |
 
 	
 ## Related
