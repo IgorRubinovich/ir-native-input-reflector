@@ -114,7 +114,7 @@ if that's not available will be useless (or should it throw an exception?)
 		/** value field to reflect on source element */
 		valueAttr : { type : String, default : "value" },
 		/** event on source element that triggers updates */
-		onEvent : { type : String },
+		onEvent : { type : String, value : "change" },
 		/** json map of regex=>value mappings, e.g.: '[{ "false" : "0"}, {"." : "true"}]'. First match wins. Keeps the value intact when empty or no match.*/
 		map : { type : Object }
 	}	
