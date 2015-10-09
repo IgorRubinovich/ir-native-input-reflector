@@ -1,7 +1,7 @@
 {
   "name": "ir-native-input-reflector",
   "main": "ir-native-input-reflector.html",
-  "version": "0.5.0",
+  "version": "0.55",
   "authors": [
     "Igor Rubinovich <igor.rubinovih@gmail.com>"
   ],

@@ -14,7 +14,8 @@ an element that feels totally like any input element.
 
 ## How it works
 - In the `attached` lifecycle phase a hidden input element is created in the ir-native-input-reflector's Light DOM.
-- When `onEvent` event fires, `valueAttr` of the source element is reflected to the hidden native input element's `value` attribute.
+- When `onEvent` event fires, `valueAttr` of the source element is reflected to the hidden native input element's `value` attribute. You may optionally specify a mapping from specific values matched as regex to specific values e.g. `map="[{ "^ever" : "xxx" }]"` will map all values starting with 'ever' to value 'xxx'.
+- Ninja mode: use multiple sources (source="id1,id2,i3,...") and .operator to combine values of multiple controls. In this case `.map` is ignored.
 
 ## Usage
 
@@ -27,7 +28,7 @@ an element that feels totally like any input element.
 | valueAttr | String	| value attr to reflect from source element (e. g. 'checked', 'value'). Default is 'value'. |
 | onEvent	| String	| event on source element that triggers updates. Default: `'change'`|
 | map 		| Object 	| json map of regex=>value mappings, e.g.: '[{ "false" : "0"}, {"." : "true"}]'. First match wins. Keeps the value intact when empty or no match. |
-
+| operation	| String	| ninja mode - currently can only take values "add" for arithmetic addition and "concat" for string concatenation |
 	
 ## Related
 This control complements [ir-reflect-to-native-behavior](https://github.com/IgorRubinovich/ir-reflect-to-native-behavior), which may
@@ -38,6 +39,9 @@ Please see [ir-reflect-to-native-behavior](https://github.com/IgorRubinovich/ir-
 
 ## To-do
 - Demo
+
+## Changelist
+- v0.55 added transformations on multiple sources [ninja mode]
 
 ## License
 [MIT](http://opensource.org/licenses/MIT) 

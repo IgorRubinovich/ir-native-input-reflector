@@ -6,29 +6,48 @@ This code may only be used under the MIT license found at http://opensource.org/
 <!--
 # ir-native-input-reflector
 
-**Polymer 1.0 behavior to enable custom web component submission as a field in a native html form.**
+**Polymer 1.0 control to enable custom web component submission as a field in a native html &lt;form&gt;.**
 
 You might have been puzzled about how exactly a non-native component may be submitted as part of a static form. 
 You might also be aware that it's not possibble to append child elements to input elements. 
 Thus it's not possible to enrich an input with shadow dom.
 
 ir-native-input-reflector is a presentationless element solves this by adding a hidden native input to its lite dom, reflecting the 
-valueAttr property of its source to the hidden field. The name of the hidden input field is determined by the host's .name property. 
+targetField property of its target to the hidden field. The `name` of the hidden input field is determined by the host's `.name` property.
+The update is done upon `.onEvent` which defaults to `'change'`. 
 The hidden input is thus submitted as part of the native form under the given name, and provides the developer with
-an element that feels totally like any input element.
+an element that feels totally like any input element. 
 
 ## How it works
 - In the `attached` lifecycle phase a hidden input element is created in the ir-native-input-reflector's Light DOM.
-- A two-way bound `.value` property is added to the host. When the host updates `.value`.
-it is reflected to the hidden native input element's `value` attribute.
+- When `onEvent` event fires, `valueAttr` of the source element is reflected to the hidden native input element's `value` attribute. You may optionally specify a mapping from specific values matched as regex to specific values e.g. `map="[{ "^ever" : "xxx" }]"` will map all values starting with 'ever' to value 'xxx'.
+- Ninja mode: use multiple sources (source="id1,id2,i3,...") and .operator to combine values of multiple controls. In this case `.map` is ignored.
 
 ## Usage
 
-- Simple: Assign to `.value` when host's "output" value changes and don't worry about the rest.
-- Advanced: Observe `.value` to update host's internal state.
+    <ir-native-input-reflector name="isPublished" value-attr="checked" on-event="iron-change" map='[{ "false" : "0" }, {"." : "true"}]'></ir-native-input-reflector>
+
+| property 	| type 		| description |
+| -------- 	| --------- | ----------- |
+| source	| String	| id of target element to reflect. if not provided will try to match by `name`. |
+| name		| String 	| Specifies input name that will be submitted as part of the form. if not provided will attempt to use target element's `name`, if that's not available will be useless. |
+| valueAttr | String	| value attr to reflect from source element (e. g. 'checked', 'value'). Default is 'value'. |
+| onEvent	| String	| event on source element that triggers updates. Default: `'change'`|
+| map 		| Object 	| json map of regex=>value mappings, e.g.: '[{ "false" : "0"}, {"." : "true"}]'. First match wins. Keeps the value intact when empty or no match. |
+| operation	| String	| ninja mode - currently can only take values "add" for arithmetic addition and "concat" for string concatenation |
+	
+## Related
+This control complements [ir-reflect-to-native-behavior](https://github.com/IgorRubinovich/ir-reflect-to-native-behavior), which may
+be used by web components developers to enable submission of components as part of a native html form. ir-reflect-to-native-behavior is
+great for bringing native form compliance to new components that developer has control over. ir-native-input-reflector on the other hand
+works with 3rd party components the developer does not control.
+Please see [ir-reflect-to-native-behavior](https://github.com/IgorRubinovich/ir-reflect-to-native-behavior) for more details.
 
 ## To-do
 - Demo
+
+## Changelog
+- v0.55 added transformations on multiple sources [ninja mode]
 
 ## License
 [MIT](http://opensource.org/licenses/MIT) 
@@ -47,54 +66,119 @@ if(!window.ir) window.ir = {};
 Polymer({
 	is : "ir-native-input-reflector",
 	attached : function() {
-		var el, that = this, map = null, m, mk, mv;
+		var el, 
+			that = this, map = [], m, mk, mv,
+			sources, attributes, events, watchers, updateHandler;
 
-		el = document.querySelector(this.source);
-		if(!el)
+		if(!this.source)
 		{
-			
 			el = document.querySelectorAll('[name="' + this.name + '"]');
-			if(el)
-				el = el[0];
+			el = Array.prototype.filter.call(el, function(el) { return el != that });
+			
+			if(el.length == 1)
+				sources = el;
+			else
+				throw new Error('ir-native-input-reflector source not found or duplicate');
 		}
+		else
+			sources = this.source.split(",").map(function(id) {
+				return document.getElementById(id);
+			});
+	
+		attributes = this.valueAttr.split(","),
+		events = this.onEvent.split(","),
+		watchers = [];
 		
-		this.sourceElement = el;
-
+		if(sources.length > 1)
+			updateHandler = this.updateValueMultiple;
+		else
+		{
+			updateHandler = this.updateValueSingle;
+			
+			if(this.map)
+			{
+				for(m = 0; m < this.map.length; m++)
+				{
+					mk = Object.keys(that.map[m])[0]; // it's an array of single key-value pairs
+					mv = this.map[m][mk];
+					
+					map.push({ re : new RegExp(mk), val : mv });
+				}
+			}
+			
+			this._map =  map;
+		}
+			
+		sources.forEach(function(el, i) {
+			var w = 
+			watchers[i] = {
+				source : el,
+				valueAttr : attributes[i] || attributes[0] || 'value',
+				onEvent : events[i] || events[0] || 'change'
+			};
+			
+			w.source.addEventListener(w.onEvent, updateHandler.bind(that))
+		})
+		
+		this.watchers = watchers;
+		
 		this.nativeInputElement = document.createElement('input');
 		this.nativeInputElement.setAttribute('type', 'hidden');
 		this.nativeInputElement.setAttribute('name', this.name || el.getAttribute("name"));
 		
 		Polymer.dom(this).appendChild(this.nativeInputElement);
 
-		that.nativeInputElement.value = that.get(that.valueAttr, that.sourceElement);
+		updateHandler.call(this);		
+	},
+	
+	updateValueMultiple : function() {
+		var that = this,
+		result, vals = [];
 		
-		if(this.map)
-		{
-			map = [];
-			
-			for(m = 0; m < that.map.length; m++)
-			{
-				mk = Object.keys(that.map[m])[0]; // it's an array of single key-value pairs
-				mv = this.map[m][mk];
-				
-				map.push({ re : new RegExp(mk), val : mv });
-			}
-		}
+		this.watchers.forEach(function(w) {
+			vals.push(that.get(w.valueAttr, w.source));
+		});	
+		
+		this.set("value", this.operations[this.operation](vals));
+	},
+	
+	updateValueSingle : function() {
+		var that = this,
+		result, val, 
+		watcher = this.watchers[0],
+		maplen = this._map.length, i = 0;
+		
+		val = this.get(watcher.valueAttr, watcher.source).toString();
 
-		el.addEventListener(this.onEvent, function() {
-			var m, strVal,
-				v = that.get(that.valueAttr, that.sourceElement);
+		// first match wins
+		while(i < maplen && !(doMap = val.match(this._map[i].re)))
+			i++;
+		
+		if(doMap)
+			val = this._map[i].val;
 			
-			that.nativeInputElement.value = v;
+		this.set("value", val);
+	},
 
-			if(!map)
-				return
-			
-			strVal = v.toString();
-			for(m = 0; m < map.length; m++)
-				if(strVal.match(map[m].re))
-					return that.nativeInputElement.value = map[m].val;
-		});
+	_reflectToNativeClone : function() {
+			this.nativeInputElement.value = this.value;
+	},
+	
+	operations : {
+		add : function(arr) {
+			var res = 0;
+			arr.forEach(function(n) {
+				res += Number(n);
+			});
+			return res;
+		},
+		concat : function(arr) {
+			var res = "";
+			arr.forEach(function(s) {
+				res += s;
+			});
+			return res;
+		},
 	},
 	
 	/** value of the reflected element */
@@ -116,7 +200,9 @@ if that's not available will be useless (or should it throw an exception?)
 		/** event on source element that triggers updates */
 		onEvent : { type : String, value : "change" },
 		/** json map of regex=>value mappings, e.g.: '[{ "false" : "0"}, {"." : "true"}]'. First match wins. Keeps the value intact when empty or no match.*/
-		map : { type : Object }
+		map : { type : Object },
+		/** ninja mode - currently can only take values "add" for arithmetic addition and "concat" for string concatenation */
+		operation : { type : String, default : "" },
 	}	
 });
 </script>
