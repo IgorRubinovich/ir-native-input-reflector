@@ -92,7 +92,9 @@ Polymer({
 		if(sources.length > 1)
 		{
 			if(!this.name)
-				throw new Error("ir-native-input-reflector: Must set a name when using multiple sources. Sorry, I can't read your mind (yet).");		
+			{
+				console.warn("ir-native-input-reflector warning: Must set a name when using multiple sources. The reflector will work but will not be submitted.");
+			}
 			
 			updateHandler = this.updateValueMultiple;
 		}
@@ -176,7 +178,9 @@ Polymer({
 		add : function(arr) {
 			var res = 0;
 			arr.forEach(function(n) {
-				res += Number(n);
+				var n = Number(n);
+				if(n == n) 
+					res += Number(n);
 			});
 			return res;
 		},
