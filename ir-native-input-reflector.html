@@ -14,13 +14,13 @@ Thus it's not possible to enrich an input with shadow dom.
 
 ir-native-input-reflector is a presentationless element solves this by adding a hidden native input to its lite dom, reflecting the 
 targetField property of its target to the hidden field. The `name` of the hidden input field is determined by the host's `.name` property.
-The update is done upon `.onEvent` which defaults to `'change'`. 
+The update is done upon `.changeEvent` which defaults to `'change'`. 
 The hidden input is thus submitted as part of the native form under the given name, and provides the developer with
 an element that feels totally like any input element. 
 
 ## How it works
 - In the `attached` lifecycle phase a hidden input element is created in the ir-native-input-reflector's Light DOM.
-- When `onEvent` event fires, `valueAttr` of the source element is reflected to the hidden native input element's `value` attribute. You may optionally specify a mapping from specific values matched as regex to specific values e.g. `map="[{ "^ever" : "xxx" }]"` will map all values starting with 'ever' to value 'xxx'.
+- When `changeEvent` event fires, `valueAttr` of the source element is reflected to the hidden native input element's `value` attribute. You may optionally specify a mapping from specific values matched as regex to specific values e.g. `map="[{ "^ever" : "xxx" }]"` will map all values starting with 'ever' to value 'xxx'.
 - Ninja mode: use multiple sources (source="id1,id2,i3,...") and .operator to combine values of multiple controls. In this case `.map` is ignored.
 
 ## Usage
@@ -32,7 +32,7 @@ an element that feels totally like any input element.
 | source	| String	| id of target element to reflect. if not provided will try to match by `name`. |
 | name		| String 	| Specifies input name that will be submitted as part of the form. if not provided will attempt to use target element's `name`, if that's not available will be useless. |
 | valueAttr | String	| value attr to reflect from source element (e. g. 'checked', 'value'). Default is 'value'. |
-| onEvent	| String	| event on source element that triggers updates. Default: `'change'`|
+| changeEvent	| String	| event on source element that triggers updates. Default: `'change'`|
 | map 		| Object 	| json map of regex=>value mappings, e.g.: '[{ "false" : "0"}, {"." : "true"}]'. First match wins. Keeps the value intact when empty or no match. |
 | operation	| String	| ninja mode - currently can only take values "add" for arithmetic addition and "concat" for string concatenation |
 	
@@ -70,15 +70,14 @@ Polymer({
 			that = this, map = [], m, mk, mv,
 			sources, attributes, events, watchers, updateHandler;
 
+		// check sources
 		if(!this.source)
-		{
+		{				
 			el = document.querySelectorAll('[name="' + this.name + '"]');
 			el = Array.prototype.filter.call(el, function(el) { return el != that });
 			
-			if(el.length == 1)
-				sources = el;
-			else
-				throw new Error('ir-native-input-reflector source not found or duplicate');
+			if(el.length > 1)
+				throw new Error('ir-native-input-reflector: source not found or occures more than once.');
 		}
 		else
 			sources = this.source.split(",").map(function(id) {
@@ -86,48 +85,57 @@ Polymer({
 			});
 	
 		attributes = this.valueAttr.split(","),
-		events = this.onEvent.split(","),
+		events = this.changeEvent.split(","),
 		watchers = [];
 		
+		// select single/multiple handler and process map 
 		if(sources.length > 1)
-			updateHandler = this.updateValueMultiple;
-		else
 		{
-			updateHandler = this.updateValueSingle;
+			if(!this.name)
+				throw new Error("ir-native-input-reflector: Must set a name when using multiple sources. Sorry, I can't read your mind (yet).");		
 			
+			updateHandler = this.updateValueMultiple;
+		}
+		else
+		{			
+			if(!this.name)
+				this.name = sources[0].name;
+
 			if(this.map)
-			{
 				for(m = 0; m < this.map.length; m++)
 				{
 					mk = Object.keys(that.map[m])[0]; // it's an array of single key-value pairs
 					mv = this.map[m][mk];
 					
 					map.push({ re : new RegExp(mk), val : mv });
-				}
-			}
+				};
 			
 			this._map =  map;
-		}
 			
+			updateHandler = this.updateValueSingle;
+		}
+
+		// append nativeInput
+		this.nativeInputElement = document.createElement('input');
+		this.nativeInputElement.setAttribute('type', this.type);
+		this.nativeInputElement.setAttribute('name', this.name);
+
+		Polymer.dom(this).appendChild(this.nativeInputElement);	
+
+		// setup listeners
 		sources.forEach(function(el, i) {
 			var w = 
 			watchers[i] = {
 				source : el,
 				valueAttr : attributes[i] || attributes[0] || 'value',
-				onEvent : events[i] || events[0] || 'change'
+				changeEvent : events[i] || events[0] || 'change'
 			};
 			
-			w.source.addEventListener(w.onEvent, updateHandler.bind(that))
+			w.source.addEventListener(w.changeEvent, updateHandler.bind(that))
 		})
 		
 		this.watchers = watchers;
 		
-		this.nativeInputElement = document.createElement('input');
-		this.nativeInputElement.setAttribute('type', 'hidden');
-		this.nativeInputElement.setAttribute('name', this.name || el.getAttribute("name"));
-		
-		Polymer.dom(this).appendChild(this.nativeInputElement);
-
 		updateHandler.call(this);		
 	},
 	
@@ -172,6 +180,13 @@ Polymer({
 			});
 			return res;
 		},
+		"date-add" : function(arr) {
+			var res = 0;
+			arr.forEach(function(n) {
+				res += (n && (new Date(n)).getTime()) || 0;
+			});
+			return res;
+		},
 		concat : function(arr) {
 			var res = "";
 			arr.forEach(function(s) {
@@ -196,13 +211,13 @@ if that's not available will be useless (or should it throw an exception?)
 		/** id of source element to reflect. if not provided will try to match by name */
 		source : { type : String },
 		/** value field to reflect on source element */
-		valueAttr : { type : String, default : "value" },
+		valueAttr : { type : String, value : "value" },
 		/** event on source element that triggers updates */
-		onEvent : { type : String, value : "change" },
+		changeEvent : { type : String, value : "change" },
 		/** json map of regex=>value mappings, e.g.: '[{ "false" : "0"}, {"." : "true"}]'. First match wins. Keeps the value intact when empty or no match.*/
 		map : { type : Object },
 		/** ninja mode - currently can only take values "add" for arithmetic addition and "concat" for string concatenation */
-		operation : { type : String, default : "" },
+		operation : { type : String, value : "" },
 	}	
 });
 </script>
