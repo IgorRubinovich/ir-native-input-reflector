@@ -73,11 +73,11 @@ Polymer({
 		// check sources
 		if(!this.source)
 		{				
-			el = document.querySelectorAll('[name="' + this.name + '"]');
-			el = Array.prototype.filter.call(el, function(el) { return el != that });
+			sources = document.querySelectorAll('[name="' + this.name + '"]');
+			sources = Array.prototype.filter.call(el, function(el) { return el != that });
 			
-			if(el.length > 1)
-				throw new Error('ir-native-input-reflector: source not found or occures more than once.');
+			if(sources.length > 1)
+				throw new Error('ir-native-input-reflector: source id not found or occures more than once.');
 		}
 		else
 			sources = this.source.split(",").map(function(id) {
