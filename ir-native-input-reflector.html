@@ -212,6 +212,8 @@ Specifies input name that will be submitted as part of the form. if not provided
 if that's not available will be useless (or should it throw an exception?)
 */
 		name : { type : String },
+		/** Type of the native input, set to input for debugging - defaults to hidden. */
+		type : { type : String, value : "hidden" },
 		/** id of source element to reflect. if not provided will try to match by name */
 		source : { type : String },
 		/** value field to reflect on source element */
