@@ -156,7 +156,7 @@ Polymer({
 		var that = this,
 		result, val, 
 		watcher = this.watchers[0],
-		maplen = this._map.length, i = 0;
+		maplen = this._map.length, i = 0, doMap;
 		
 		val = this.get(watcher.valueAttr, watcher.source).toString();
 
