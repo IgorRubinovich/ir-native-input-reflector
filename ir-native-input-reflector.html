@@ -158,7 +158,9 @@ Polymer({
 		watcher = this.watchers[0],
 		maplen = this._map.length, i = 0, doMap;
 		
-		val = this.get(watcher.valueAttr, watcher.source).toString();
+		val = this.get(watcher.valueAttr, watcher.source);
+		val = val == null || typeof val == 'undefined' ? '' : val.toString();
+		
 
 		// first match wins
 		while(i < maplen && !(doMap = val.match(this._map[i].re)))
