@@ -8,27 +8,27 @@ Thus it's not possible to enrich an input with shadow dom.
 
 ir-native-input-reflector is a presentationless element solves this by adding a hidden native input to its lite dom, reflecting the 
 targetField property of its target to the hidden field. The `name` of the hidden input field is determined by the host's `.name` property.
-The update is done upon `.onEvent` which defaults to `'change'`. 
+The update is done upon `.changeEvent` which defaults to `'change'`.
 The hidden input is thus submitted as part of the native form under the given name, and provides the developer with
 an element that feels totally like any input element. 
 
 ## How it works
 - In the `attached` lifecycle phase a hidden input element is created in the ir-native-input-reflector's Light DOM.
-- When `onEvent` event fires, `valueAttr` of the source element is reflected to the hidden native input element's `value` attribute. You may optionally specify a mapping from specific values matched as regex to specific values e.g. `map="[{ "^ever" : "xxx" }]"` will map all values starting with 'ever' to value 'xxx'.
+- When `changeEvent` event fires, `valueAttr` of the source element is reflected to the hidden native input element's `value` attribute. You may optionally specify a mapping from specific values matched as regex to specific values e.g. `map="[{ "^ever" : "xxx" }]"` will map all values starting with 'ever' to value 'xxx'.
 - Ninja mode: use multiple sources (source="id1,id2,i3,...") and .operator to combine values of multiple controls. In this case `.map` is ignored.
 
 ## Usage
 
     <ir-native-input-reflector name="isPublished" value-attr="checked" on-event="iron-change" map='[{ "false" : "0" }, {"." : "true"}]'></ir-native-input-reflector>
 
-| property 	| type 		| description |
-| -------- 	| --------- | ----------- |
-| source	| String	| id of target element to reflect. if not provided will try to match by `name`. |
-| name		| String 	| Specifies input name that will be submitted as part of the form. if not provided will attempt to use target element's `name`, if that's not available will be useless. |
-| valueAttr | String	| value attr to reflect from source element (e. g. 'checked', 'value'). Default is 'value'. |
-| onEvent	| String	| event on source element that triggers updates. Default: `'change'`|
-| map 		| Object 	| json map of regex=>value mappings, e.g.: '[{ "false" : "0"}, {"." : "true"}]'. First match wins. Keeps the value intact when empty or no match. |
-| operation	| String	| ninja mode - currently can only take values "add" for arithmetic addition and "concat" for string concatenation |
+| property 	    | type 		| description |
+| ------------- | --------- | ----------- |
+| source	    | String	| id of target element to reflect. if not provided will try to match by `name`. |
+| name		    | String 	| Specifies input name that will be submitted as part of the form. if not provided will attempt to use target element's `name`, if that's not available will be useless. |
+| valueAttr     | String	| value attr to reflect from source element (e. g. 'checked', 'value'). Default is 'value'. |
+| changeEvent	| String	| event on source element that triggers updates. Default: `'change'`|
+| map 		    | Object 	| json map of regex=>value mappings, e.g.: '[{ "false" : "0"}, {"." : "true"}]'. First match wins. Keeps the value intact when empty or no match. |
+| operation	    | String	| ninja mode - currently can only take values "add" for arithmetic addition and "concat" for string concatenation |
 	
 ## Related
 This control complements [ir-reflect-to-native-behavior](https://github.com/IgorRubinovich/ir-reflect-to-native-behavior), which may

@@ -221,7 +221,7 @@ if that's not available will be useless (or should it throw an exception?)
 		/** value field to reflect on source element */
 		valueAttr : { type : String, value : "value" },
 		/** event on source element that triggers updates */
-		changeEvent : { type : String, value : "change" },
+		changeEvent : { type : String, value : "change" , notify : true },
 		/** json map of regex=>value mappings, e.g.: '[{ "false" : "0"}, {"." : "true"}]'. First match wins. Keeps the value intact when empty or no match.*/
 		map : { type : Object },
 		/** ninja mode - currently can only take values "add" for arithmetic addition and "concat" for string concatenation */
