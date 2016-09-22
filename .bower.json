@@ -1,0 +1,42 @@
+{
+  "name": "ir-native-input-reflector",
+  "main": "ir-native-input-reflector.html",
+  "authors": [
+    "Igor Rubinovich <igor.rubinovih@gmail.com>"
+  ],
+  "description": "Polymer 1.0 element to reflect custom web component value to native input form.",
+  "keywords": [
+    "multiselect",
+    "web-component",
+    "web-components",
+    "polymer",
+    "form",
+    "input",
+    "behavior",
+    "native"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "webcomponentsjs": "~0.7.7",
+    "iron-component-page": "PolymerElements/iron-component-page#~1.0.5",
+    "web-component-tester": "*"
+  },
+  "homepage": "https://github.com/IgorRubinovich/ir-native-input-reflector",
+  "_release": "f5e0971b6b",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "f5e0971b6b8e3071a224a34da4f944a2066cc9f2"
+  },
+  "_source": "https://github.com/IgorRubinovich/ir-native-input-reflector.git",
+  "_target": "*",
+  "_originalSource": "https://github.com/IgorRubinovich/ir-native-input-reflector.git"
+}

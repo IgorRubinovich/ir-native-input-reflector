@@ -35,6 +35,7 @@ an element that feels totally like any input element.
 | changeEvent	| String	| event on source element that triggers updates. Default: `'change'`|
 | map 		| Object 	| json map of regex=>value mappings, e.g.: '[{ "false" : "0"}, {"." : "true"}]'. First match wins. Keeps the value intact when empty or no match. |
 | operation	| String	| ninja mode - currently can only take values "add" for arithmetic addition and "concat" for string concatenation |
+| operationOptions	| Object	| { concatString : <string to use when 'concat' option is used, skip : <regex, skip matching values (applied after map)> } |
 	
 ## Related
 This control complements [ir-reflect-to-native-behavior](https://github.com/IgorRubinovich/ir-reflect-to-native-behavior), which may
@@ -103,20 +104,21 @@ Polymer({
 			if(!this.name)
 				this.name = sources[0].name;
 
-			if(this.map)
-				for(m = 0; m < this.map.length; m++)
-				{
-					mk = Object.keys(that.map[m])[0]; // it's an array of single key-value pairs
-					mv = this.map[m][mk];
-					
-					map.push({ re : new RegExp(mk), val : mv });
-				};
-			
-			this._map =  map;
-			
 			updateHandler = this.updateValueSingle;
 		}
 
+		if(this.map)
+			for(m = 0; m < this.map.length; m++)
+			{
+				mk = Object.keys(that.map[m])[0]; // it's an array of single key-value pairs
+				mv = this.map[m][mk];
+				
+				map.push({ re : new RegExp(mk), val : mv });
+			};
+		
+		this._map =  map;
+		
+		
 		// append nativeInput
 		this.nativeInputElement = document.createElement('input');
 		this.nativeInputElement.setAttribute('type', this.type);
@@ -141,29 +143,30 @@ Polymer({
 		updateHandler.call(this);		
 	},
 	
+	
+	
 	updateValueMultiple : function() {
 		var that = this,
 		result, vals = [];
 		
 		this.watchers.forEach(function(w) {
-			vals.push(that.get(w.valueAttr, w.source));
-		});	
+			vals.push({ val : this.get(w.valueAttr, w.source), src : w.source } );
+		}.bind(this));
 		
-		this.set("value", this.operations[this.operation](vals));
+		this.set("value", this.operations[this.operation].call(this, this.applyMap(vals)));
 	},
 	
 	updateValueSingle : function() {
-		var that = this,
-		result, val, 
-		watcher = this.watchers[0],
-		maplen = this._map.length, i = 0, doMap;
+		var result, val, 
+			watcher = this.watchers[0],
+			maplen = this._map.length, i = 0, doMap;
 		
 		val = this.get(watcher.valueAttr, watcher.source);
 		val = val == null || typeof val == 'undefined' ? '' : val.toString();
 		
 
 		// first match wins
-		while(i < maplen && !(doMap = val.match(this._map[i].re)))
+		while(i < maplen && !(doMap = String(val).match(this._map[i].re)))
 			i++;
 		
 		if(doMap)
@@ -171,9 +174,44 @@ Polymer({
 			
 		this.set("value", val);
 	},
+	
+	applyMap : function(vals) {
+		if(!this._map) return vals.map(function(el) { return el.val });
+		var maplen = this._map.length, doMap
+			avals = vals instanceof Array ? vals : [vals];
+		
+		avals = 
+			avals.map(function(el) {
+				var val, doMap, i = 0, v, attrs;
+				
+				// first match wins
+				while(i < maplen && !(doMap = String(el.val).match(this._map[i].re)))
+					i++;
+				
+				if(doMap)
+				{
+					val = this._map[i].val;
+					attrs = val.match(/\@\[([^\]]+)]/g);
+					if(attrs)
+						attrs
+						.map(function(a) { return a.replace(/^\@\[/,'').replace(/\]$/,'') } )
+						.forEach(function(a) {
+							val = val.replace(new RegExp("@\\[" + a + "\\]", "g"), el.src.getAttribute(a)) 
+						});
+				}
+				
+				return val;
+			}.bind(this));
+		
+		return vals instanceof Array ? avals : avals[0];
+	},
 
 	_reflectToNativeClone : function() {
 			this.nativeInputElement.value = this.value;
+	},
+	
+	_mapChanged : function() {
+		//this.
 	},
 	
 	operations : {
@@ -194,11 +232,17 @@ Polymer({
 			return res;
 		},
 		concat : function(arr) {
-			var res = "";
-			arr.forEach(function(s) {
-				res += s;
-			});
-			return res;
+			var f = this.operationOptions.skip;
+			
+			if(!arr)
+				return "";
+			
+			if(f)
+			{
+				f = new RegExp(f);
+				arr = arr.filter(function(el) { return !f.test(el) }); 
+			}
+			return arr.join(this.operationOptions.concatString || ',');
 		},
 	},
 	
@@ -223,9 +267,11 @@ if that's not available will be useless (or should it throw an exception?)
 		/** event on source element that triggers updates */
 		changeEvent : { type : String, value : "change" , notify : true },
 		/** json map of regex=>value mappings, e.g.: '[{ "false" : "0"}, {"." : "true"}]'. First match wins. Keeps the value intact when empty or no match.*/
-		map : { type : Object },
+		map : { type : Object, observer : "_mapChanged" },
 		/** ninja mode - currently can only take values "add" for arithmetic addition and "concat" for string concatenation */
 		operation : { type : String, value : "" },
+		/** ninja mode - currently can only take values "add" for arithmetic addition and "concat" for string concatenation */
+		operationOptions : { type : Object, value : {}, notify : true },
 	}	
 });
 </script>

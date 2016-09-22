@@ -27,8 +27,9 @@ an element that feels totally like any input element.
 | name		    | String 	| Specifies input name that will be submitted as part of the form. if not provided will attempt to use target element's `name`, if that's not available will be useless. |
 | valueAttr     | String	| value attr to reflect from source element (e. g. 'checked', 'value'). Default is 'value'. |
 | changeEvent	| String	| event on source element that triggers updates. Default: `'change'`|
-| map 		    | Object 	| json map of regex=>value mappings, e.g.: '[{ "false" : "0"}, {"." : "true"}]'. First match wins. Keeps the value intact when empty or no match. |
+| map 		    | Object 	| json map of regex=>value mappings, e.g.: '[{ "false" : "0"}, { "attr" : "@[value]" }, {"." : "true"}]'. First match wins. Keeps the value intact when empty or no match. Use @[attr-name] to interpolate with attr value from source element. |
 | operation	    | String	| ninja mode - currently can only take values "add" for arithmetic addition and "concat" for string concatenation |
+| operationOptions	| Object	| { concatString : <string to use when 'concat' option is used, skip : <regex, skip matching values (applied after map)> } |
 	
 ## Related
 This control complements [ir-reflect-to-native-behavior](https://github.com/IgorRubinovich/ir-reflect-to-native-behavior), which may
