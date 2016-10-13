@@ -90,7 +90,7 @@ Polymer({
 		watchers = [];
 		
 		// select single/multiple handler and process map 
-		if(sources.length > 1)
+		if(this.operation || sources.length > 1)
 		{
 			if(!this.name)
 			{
