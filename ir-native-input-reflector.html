@@ -69,12 +69,13 @@ Polymer({
 	attached : function() {
 		var el, 
 			that = this, map = [], m, mk, mv,
-			sources, attributes, events, watchers, updateHandler;
+			sources, attributes, events, watchers, updateHandler, p;
 
+		p = Polymer.dom(Polymer.dom(Polymer.dom(this).parentNode).getOwnerRoot());
 		// check sources
 		if(!this.source)
-		{				
-			sources = document.querySelectorAll('[name="' + this.name + '"]');
+		{
+			sources = p.querySelectorAll('[name="' + this.name + '"]');
 			sources = Array.prototype.filter.call(sources, function(el) { return el != that });
 			
 			if(sources.length > 1)
@@ -82,7 +83,7 @@ Polymer({
 		}
 		else
 			sources = this.source.split(",").map(function(id) {
-				return document.getElementById(id);
+				return p.getElementById(id);
 			});
 	
 		attributes = this.valueAttr.split(","),
