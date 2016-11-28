@@ -71,7 +71,7 @@ Polymer({
 			that = this, map = [], m, mk, mv,
 			sources, attributes, events, watchers, updateHandler, p;
 
-		p = Polymer.dom(Polymer.dom(Polymer.dom(this).parentNode).getOwnerRoot());
+		p = Polymer.dom(Polymer.dom(Polymer.dom(this).parentNode).getOwnerRoot()); // look only within the scope of the shadow dom document
 		// check sources
 		if(!this.source)
 		{
