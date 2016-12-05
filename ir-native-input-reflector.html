@@ -76,8 +76,8 @@ Polymer({
 		if(!this.source)
 		{
 			sources = p.querySelectorAll('[name="' + this.name + '"]');
-			sources = Array.prototype.filter.call(sources, function(el) { return el != that });
-			
+			sources = Array.prototype.filter.call(sources, function(el) { return el != this.nativeInputElement && el != this }.bind(this));
+
 			if(sources.length > 1)
 				throw new Error('ir-native-input-reflector: source id not found or occures more than once.');
 		}
