@@ -83,7 +83,7 @@ Polymer({
 		}
 		else
 			sources = this.source.split(",").map(function(id) {
-				return p.getElementById(id);
+				return p.querySelector('#' + id);
 			});
 	
 		attributes = this.valueAttr.split(","),
