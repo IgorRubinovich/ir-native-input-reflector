@@ -78,8 +78,12 @@ Polymer({
 			sources = p.querySelectorAll('[name="' + this.name + '"]');
 			sources = Array.prototype.filter.call(sources, function(el) { return el != this.nativeInputElement && el != this }.bind(this));
 
-			if(sources.length > 1)
+			if(sources.length != 1)
+			{
+				if(console.error)
+					console.error('Validator target misconfigured:', this)
 				throw new Error('ir-native-input-reflector: source id not found or occures more than once.');
+			}
 		}
 		else
 			sources = this.source.split(",").map(function(id) {
@@ -160,7 +164,7 @@ Polymer({
 	updateValueSingle : function() {
 		var result, val, 
 			watcher = this.watchers[0],
-			maplen = this._map.length, i = 0, doMap;
+			maplen = this._map.length, i = 0, doMap, err;
 		
 		val = this.get(watcher.valueAttr, watcher.source);
 		val = val == null || typeof val == 'undefined' ? '' : val.toString();
