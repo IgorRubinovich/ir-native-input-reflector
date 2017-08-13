@@ -111,7 +111,7 @@ Polymer({
 			if(!this.name)
 				this.name = sources[0].name;
 
-			if(this.name == sources[0].name)
+			if(this.name == (sources[0].name || sources[0].getAttribute('name')))
 				sources[0].removeAttribute('name');
 				
 			updateHandler = this.updateValueSingle;
@@ -151,6 +151,9 @@ Polymer({
 		this.watchers = watchers;
 		
 		updateHandler.call(this);		
+		this.async(function() {
+			updateHandler.call(this);		
+		}, 1000);
 	},
 	
 	
@@ -209,6 +212,8 @@ Polymer({
 							val = val.replace(new RegExp("@\\[" + a + "\\]", "g"), el.src.getAttribute(a)) 
 						});
 				}
+				else
+					val = el.val
 				
 				return val;
 			}.bind(this));
@@ -252,7 +257,7 @@ Polymer({
 				f = new RegExp(f);
 				arr = arr.filter(function(el) { return !f.test(el) }); 
 			}
-			return arr.join(this.operationOptions.concatString || ',');
+			return arr.join(typeof this.operationOptions.concatString != 'undefined' ? this.operationOptions.concatString : ',');
 		},
 	},
 	
