@@ -162,7 +162,7 @@ Polymer({
 		var that = this,
 		result, vals = [];
 		
-		this.watchers.filter(w => !w.source.disabled).forEach(function(w) {
+		this.watchers.filter(function(w) { return !w.source.disabled }).forEach(function(w) {
 			vals.push({ val : this.get(w.valueAttr, w.source), src : w.source } );
 		}.bind(this));
 		
